@@ -3,17 +3,14 @@
 #if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
 #renv::activate()   # does nothing if already active
 
+setwd("C:/git/camtrap-service")
 # 2. Load functions and packages
-source("camera_ops_functions.R")
-import::here(readr, read_csv, write_csv, .from = "readr")
+source("R/camera_ops_functions.R")
+import::here("readr", read_csv, write_csv)
 
 # 3. Ingest data  --------------------------------------------------------
-csv_in  <- "test_camera_summary.csv"
-dat_raw <- readr::read_csv(csv_in, show_col_types = FALSE)
-
-# Initial scratchpad testing here
-# Work through function interiors and check
-dat <- dat_raw
+csv_in  <- "dat/test_camera_summary.csv"
+dat_raw <- read_csv(csv_in, show_col_types = FALSE)
 
 # 4. Analyse -------------------------------------------------------------
 result <- analyse_cameras(dat_raw)
