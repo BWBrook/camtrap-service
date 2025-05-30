@@ -1,11 +1,12 @@
 # camera_ops_functions.R -------------------------------------------------
 # All heavy lifting lives here.  Import the needed bits explicitly.
 
-import::from("dplyr", `%>%`, arrange, mutate, lag, group_by, ungroup, filter,
-             group_modify, select, summarise, n, first, last, across, left_join,
-             everything, case_when, lead, reframe, rowwise, if_else, row_number)
+import::from("dplyr", `%>%`, arrange, mutate, lag, group_by, ungroup, filter, 
+             last,group_modify, select, summarise, n, first, last, across, 
+             left_join, everything, case_when, lead, reframe, rowwise, if_else, 
+             row_number)
 import::from("tidyr", complete, pivot_wider, replace_na)
-import::from("lubridate", ymd_hms, as_date, days)
+import::from("lubridate", parse_date_time, as_date, days)
 import::from("purrr", map2)
 import:::from("zoo", na.locf)
 
@@ -26,7 +27,8 @@ SERVICE_BOUNCE  <- 500   # mV jump that signals fresh batteries
 parse_columns <- function(dat) {
   dat %>%
     mutate(
-      datetime = ymd_hms(datetime, tz = "UTC"),
+      datetime = parse_date_time(datetime, orders = 
+                                   c("dmy_HM", "dmy_HMS", "ymd_HMS"), tz = "UTC"),
       date     = as_date(datetime),
       bl       = as.numeric(bl),
       rd       = as.numeric(rd),
@@ -78,6 +80,8 @@ daily_aggregate <- function(dat_with_units) {
     summarise(
       count = n(),
       bl    = median(bl, na.rm = TRUE),
+      rd    = dplyr::last(rd[order(datetime)]),
+      li    = dplyr::last(li[order(datetime)]),
       .groups = "drop"
     )
 }
@@ -255,6 +259,8 @@ summarise_services <- function(daily2) {
         rev(bl[!is.na(bl)])[1:min(5, sum(!is.na(bl)))]
         , na.rm = TRUE))),
       min_bl   = as.integer(round(min(bl, na.rm = TRUE))),
+      lt_days  = dplyr::last(rd[order(date)]),
+      lt_images= dplyr::last(li[order(date)]),
       .groups  = "drop"
     )
 }
@@ -389,7 +395,7 @@ analyse_cameras <- function(dat) {
   daily2 <- add_site_column(daily2)
   # Add 'site' column by extracting prefix from cam_id
   
-  daily2 <- zero_anomalous_gaps(daily2)
+  daily2 <- zero_anomalous_gaps(daily2, q = 0.99)
   # Zero-out anomalously long no-image gaps at the site level
 
   services <- summarise_services(daily2)

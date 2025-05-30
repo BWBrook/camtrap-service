@@ -62,8 +62,37 @@ def process_root_folder(root_dir):
             total_files += file_count
     print(f"All done. Total files moved: {total_files}")
 
+def cli() -> None:
+    import argparse
+    import logging as log
+    from pathlib import Path
+
+    p = argparse.ArgumentParser(
+        description="Flatten each service’s sub-folders one level up, "
+                    "prefixing filenames to preserve uniqueness."
+    )
+    p.add_argument(
+        "root",
+        type=Path,
+        help="root directory that contains the service folders"
+    )
+    p.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="enable INFO-level progress logs"
+    )
+    args = p.parse_args()
+
+    log.basicConfig(
+        level=log.INFO if args.verbose else log.WARNING,
+        format="%(levelname)s: %(message)s"
+    )
+
+    if not args.root.is_dir():
+        p.error(f"'{args.root}' is not a directory")
+
+    # `process_root_folder` expects a str.
+    process_root_folder(str(args.root))
+
 if __name__ == "__main__":
-    # Change the root directory as needed.
-    root_directory = r"F:\HR-Service-Jul24"
-    #root_directory = r"D:\test"
-    process_root_folder(root_directory)
+    cli()

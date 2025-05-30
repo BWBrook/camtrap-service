@@ -9,7 +9,7 @@ source("R/camera_ops_functions.R")
 import::here("readr", read_csv, write_csv)
 
 # 3. Ingest data  --------------------------------------------------------
-csv_in  <- "dat/test_camera_summary.csv"
+csv_in  <- "dat/hr_service_23_24.csv"
 dat_raw <- read_csv(csv_in, show_col_types = FALSE)
 
 # 4. Analyse -------------------------------------------------------------
